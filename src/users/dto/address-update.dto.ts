@@ -1,16 +1,16 @@
 import { Optional } from '@nestjs/common';
-import { IsString, IsNumber } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class AddressUpdateDto {
   @IsString()
-  @Optional()
+  @IsOptional()
   street: string;
 
   @IsString()
-  @Optional()
+  @IsOptional()
   city: string;
 
   @IsNumber()
-  @Optional()
+  @IsOptional()
   pinCode: number;
 }

@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpCode,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -16,38 +17,69 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectConnection() private connection: Connection,
   ) {}
-  async create(createUserDto: CreateUserDto) {
-    const isEmailExist = await this.userModel.findOne({
-      email: createUserDto.email,
-    });
-    if (isEmailExist) {
+  async isEmailAlreadyTaken(email: string): Promise<boolean> {
+    const existingUser = await this.userModel.findOne({ email });
+
+    if (existingUser) {
       throw new ConflictException('Email is already in use');
     }
-    const isPhoneExist = await this.userModel.findOne({
-      phone: createUserDto.phone,
-    });
-    if (isPhoneExist) {
+    return true;
+  }
+  async isPhoneAlreadyTaken(phone: number): Promise<boolean> {
+    const existingUser = await this.userModel.findOne({ phone });
+
+    if (existingUser) {
       throw new ConflictException('Phone is already in use');
     }
+    return true;
+  }
+  async create(createUserDto: CreateUserDto) {
+    await this.isEmailAlreadyTaken(createUserDto.email);
+    await this.isPhoneAlreadyTaken(createUserDto.phone);
     const createdUser = new this.userModel(createUserDto);
     const savedUser = await createdUser.save();
 
     return savedUser;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    const allUsers = await this.userModel.find();
+
+    return allUsers;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: Types.ObjectId) {
+    const user = await this.userModel.findOne({ _id: id });
+    console.log(user);
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: Types.ObjectId, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (updateUserDto?.email && updateUserDto?.email !== user.email) {
+      await this.isEmailAlreadyTaken(updateUserDto.email);
+    }
+
+    if (updateUserDto?.phone && updateUserDto?.phone !== user.phone) {
+      await this.isPhoneAlreadyTaken(updateUserDto.phone);
+    }
+    Object.assign(user, updateUserDto);
+    await user.save();
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  findByEmail(email: string) {
+    return this.userModel.findOne({ email }).exec();
+  }
+
+  async remove(id: Types.ObjectId) {
+    const user = await this.userModel.findByIdAndDelete(id).exec();
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return { statusCode: 200, message: 'User successfully deleted' };
   }
 }
