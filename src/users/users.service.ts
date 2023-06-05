@@ -63,7 +63,7 @@ export class UsersService {
       await this.isEmailAlreadyTaken(updateUserDto.email);
     }
 
-    if (updateUserDto?.phone && updateUserDto?.phone !== user.phone) {
+    if (updateUserDto.phone && updateUserDto?.phone !== user.phone) {
       await this.isPhoneAlreadyTaken(updateUserDto.phone);
     }
     Object.assign(user, updateUserDto);

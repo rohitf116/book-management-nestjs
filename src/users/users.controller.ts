@@ -39,28 +39,31 @@ export class UsersController {
   }
   //
 
-  @Serialize(UserDto)
-  @Get()
-  findAll(@Req() req: any) {
-    console.log(req.user);
-    return this.usersService.findAll();
-  }
+  // @Serialize(UserDto)
+  // @Get()
+  // findAll() {
+  //   return this.usersService.findAll();
+  // }
   @Serialize(UserDto)
   @Get(':id')
   findOne(@ValidateObjectId() id: Types.ObjectId) {
     return this.usersService.findOne(id);
   }
+
   @Serialize(UserDto)
-  @Patch(':id')
-  update(
-    @ValidateObjectId() id: Types.ObjectId,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.update(id, updateUserDto);
+  @Get()
+  myAccount(@Req() req: any) {
+    return this.usersService.findOne(req.user._id);
   }
 
-  @Delete(':id')
-  remove(@ValidateObjectId() id: Types.ObjectId) {
-    return this.usersService.remove(id);
+  @Serialize(UserDto)
+  @Patch('')
+  update(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(req.user._id, updateUserDto);
+  }
+
+  @Delete('')
+  remove(@Req() req: any) {
+    return this.usersService.remove(req.user._id);
   }
 }
