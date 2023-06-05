@@ -23,7 +23,7 @@ export class AuthService {
         isAdmin: user.isAdmin,
         tokenVersion: user.tokenVersion,
       };
-      const token = this.jwtService.sign(payload);
+      const token = await this.jwtService.signAsync(payload);
       return { accessToken: token };
     }
     throw new UnauthorizedException('Check your credintials');

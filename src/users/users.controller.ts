@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,6 +16,8 @@ import { UserDto } from './dto/user.dto';
 import { Types } from 'mongoose';
 import { ValidateObjectId } from 'src/decorators/validObjectId.decorator';
 import { AuthService } from './auth.service';
+import { UserLoginDto } from './dto/login-user.dto';
+import { Public } from 'src/decorators/public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -23,13 +26,23 @@ export class UsersController {
     private readonly authService: AuthService,
   ) {}
   @Serialize(UserDto)
+  @Public()
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.authService.singup(createUserDto);
   }
+
+  @Post('signin')
+  @Public()
+  async singIn(@Body() userLoginDto: UserLoginDto) {
+    return this.authService.signin(userLoginDto.email, userLoginDto.password);
+  }
+  //
+
   @Serialize(UserDto)
   @Get()
-  findAll() {
+  findAll(@Req() req: any) {
+    console.log(req.user);
     return this.usersService.findAll();
   }
   @Serialize(UserDto)
