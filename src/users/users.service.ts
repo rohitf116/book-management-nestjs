@@ -50,7 +50,6 @@ export class UsersService {
 
   async findOne(id: Types.ObjectId) {
     const user = await this.userModel.findOne({ _id: id });
-    console.log(user);
     return user;
   }
 
@@ -73,6 +72,13 @@ export class UsersService {
 
   findByEmail(email: string) {
     return this.userModel.findOne({ email }).exec();
+  }
+  async notExistingUser(id: any) {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return true;
   }
 
   async remove(id: Types.ObjectId) {

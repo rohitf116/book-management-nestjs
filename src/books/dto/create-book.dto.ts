@@ -23,7 +23,6 @@ export class CreateBookDto {
 
   @IsNotEmpty()
   @IsNumber()
-  @IsISBN()
   ISBN: number;
 
   @IsNotEmpty()
