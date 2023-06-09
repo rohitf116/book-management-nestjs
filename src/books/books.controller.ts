@@ -14,6 +14,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { GetUser } from 'src/users/decorators/get-current-user.decorator';
 import { BookGuard } from 'src/guards/book.guard';
+import { Owner } from 'src/interceptor/owner.interceptor';
 
 @Controller('books')
 export class BooksController {
@@ -28,20 +29,24 @@ export class BooksController {
   findAll() {
     return this.booksService.findAll();
   }
-
+  //fds
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.booksService.findOne(+id);
+  findOne(@Param('id') id: string, @GetUser() userId: any) {
+    return this.booksService.findOneTest(id, userId);
   }
 
   @Patch(':id')
-  @UseGuards(BookGuard)
-  update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
-    return this.booksService.update(id, updateBookDto);
+  // @UseGuards(BookGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updateBookDto: UpdateBookDto,
+    @GetUser() userId: any,
+  ) {
+    return this.booksService.update(id, updateBookDto, userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.booksService.remove(+id);
+  remove(@Param('id') id: string, @GetUser() userId: any) {
+    return this.booksService.remove(id, userId);
   }
 }

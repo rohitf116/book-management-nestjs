@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, UseGuards } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
@@ -15,7 +20,6 @@ export class BooksService {
   ) {}
   //
   async create(createBookDto: CreateBookDto, id: any) {
-    await this.userService.notExistingUser(id);
     await this.isTitleAlreadyUsed(createBookDto.title);
     await this.isIsbnAlreadyUsed(createBookDto.ISBN);
 
@@ -29,7 +33,6 @@ export class BooksService {
   }
 
   async findUsersBooks(id: Types.ObjectId) {
-    await this.userService.notExistingUser(id);
     return;
   }
 
@@ -44,7 +47,7 @@ export class BooksService {
     return true;
   }
 
-  async isIsbnAlreadyUsed(isbn) {
+  async isIsbnAlreadyUsed(isbn: any) {
     const book = await this.bookModel.findOne({ ISBN: isbn });
     if (book) {
       throw new ConflictException('isbn is not avalable');
@@ -52,18 +55,31 @@ export class BooksService {
     return true;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} book`;
-  }
+  async findOne(id: any) {
+    const book = await this.bookModel.findOne({ _id: id });
 
-  async update(id: string, updateBookDto: UpdateBookDto) {
-    const book = await this.bookModel.find({ _id: id });
-    console.log(book);
+    return book;
+  }
+  checkOwner(bookId: any, userid: any) {
+    if (userid !== bookId.userId.toString()) {
+      throw new UnauthorizedException();
+    }
+    return true;
+  }
+  async findOneTest(id: any, userid: any) {
+    const book = await this.bookModel.findOne({ _id: id });
     return book;
   }
 
-  async remove(id: number) {
-    await this.userService.notExistingUser(id);
+  async update(id: string, updateBookDto: UpdateBookDto, userId: any) {
+    const book: Book = await this.bookModel.findOne({ _id: id });
+    this.checkOwner(book, userId);
+    return book;
+  }
+
+  async remove(id: string, userId: any) {
+    const book: Book = await this.bookModel.findOne({ _id: id });
+    this.checkOwner(book, userId);
     return `This action removes a #${id} book`;
   }
 }
